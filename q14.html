@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Pagination</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        #data-list {
+            margin-top: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+        .data-item {
+            padding: 10px;
+            margin: 5px 0;
+            background-color: #f0f0f0;
+            cursor: pointer;
+        }
+        .data-item:hover {
+            background-color: #ddd;
+        }
+        #loading {
+            text-align: center;
+            padding: 20px;
+            font-size: 18px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>Advanced Pagination with Search and Filters</h1>
+    <input type="text" id="search-input" placeholder="Search...">
+    <select id="filter-select">
+        <option value="">All Categories</option>
+        <option value="Category 1">Category 1</option>
+        <option value="Category 2">Category 2</option>
+    </select>
+    <div id="data-list"></div>
+    <div id="loading">Loading more data...</div>
+    <script>
+        const apiUrl = 'https://jsonplaceholder.typicode.com/posts'; 
+        let currentPage = 1;
+        let isLoading = false;
+        let searchQuery = '';
+        let selectedFilter = '';       
+        function throttle(func, delay) {
+            let lastCall = 0;
+            return function(...args) {
+                const now = Date.now();
+                if (now - lastCall >= delay) {
+                    lastCall = now;
+                    func(...args);
+                }
+            };
+        }        
+        function debounce(func, delay) {
+            let timeout;
+            return function(...args) {
+                clearTimeout(timeout);
+                timeout = setTimeout(() => func(...args), delay);
+            };
+        }        
+        async function fetchData(page, query = '', filter = '') {
+            if (isLoading) return;  
+            isLoading = true;
+            const loadingElement = document.getElementById('loading');
+            loadingElement.style.display = 'block';
+
+            try {
+                const response = await fetch(`${apiUrl}?_page=${page}&_limit=1000&q=${query}&category=${filter}`);
+                console.log(`${apiUrl}?_page=${page}&_limit=10&q=${query}&category=${filter}`);
+                const data = await response.json();
+                        console.log(data);
+                if (data.length) {
+                    displayData(data);
+                    currentPage++;
+                } else {
+                    loadingElement.innerHTML = 'No more data available.';
+                }
+            } catch (error) {
+                console.error('Error fetching data:', error);
+                loadingElement.innerHTML = 'Failed to load data.';
+            } finally {
+                isLoading = false;
+                loadingElement.style.display = 'none';
+            }
+        }        
+        function displayData(data) {
+            const dataList = document.getElementById('data-list');
+            data.forEach(item => {
+                const dataItem = document.createElement('div');
+                dataItem.classList.add('data-item');
+                dataItem.textContent = item.title; 
+                dataItem.addEventListener('click', () => alert('Item clicked: ' + item.title));
+                dataList.appendChild(dataItem);
+            });
+        }        
+        function handleScroll() {
+            const scrollPosition = window.scrollY + window.innerHeight;
+            const documentHeight = document.documentElement.scrollHeight;
+
+            if (scrollPosition >= documentHeight - 100) {
+                fetchData(currentPage, searchQuery, selectedFilter);
+            }
+        }       
+        const searchInput = document.getElementById('search-input');
+        searchInput.addEventListener('input', debounce(function() {
+            searchQuery = searchInput.value;
+            currentPage = 1;
+            document.getElementById('data-list').innerHTML = '';
+            fetchData(currentPage, searchQuery, selectedFilter);
+        }, 500));        
+        const filterSelect = document.getElementById('filter-select');
+        filterSelect.addEventListener('change', function() {
+            selectedFilter = filterSelect.value;
+            currentPage = 1;
+            document.getElementById('data-list').innerHTML = '';
+            fetchData(currentPage, searchQuery, selectedFilter);
+        });        
+        fetchData(currentPage, searchQuery, selectedFilter);
+        window.addEventListener('scroll', throttle(handleScroll, 1000)); 
+        async function postData() {
+    const url = 'https://jsonplaceholder.typicode.com/posts?_page=1&_limit=10&q=&category='; 
+    const data = {
+        title: 'foo', 
+        body: 'bar', 
+        userId: 1    
+    };
+    try {
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json' 
+            },
+            body: JSON.stringify(data) 
+        });
+
+        if (response.ok) {
+            const responseData = await response.json(); 
+            console.log('Data posted successfully:', responseData);
+        } else {
+            console.error('Error posting data:', response.statusText);
+        }
+    } catch (error) {
+        console.error('Network error:', error);
+    }
+}
+for(let i=0;i<1000;i++){
+postData();
+}
+    </script>
+</body>
+</html>
