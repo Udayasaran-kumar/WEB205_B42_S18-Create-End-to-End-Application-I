@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JavaScript Counter with Dynamic UI Update</title>
+  <style>
+    .counter-container {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin-top: 50px;
+    }
+    .counter-display {
+      font-size: 48px;
+      margin: 20px;
+    }
+    button {
+      font-size: 20px;
+      padding: 10px 20px;
+      margin: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="counter-container">
+    <div id="counter-value" class="counter-display">0</div>
+    <button id="increment-btn">Increment</button>
+    <button id="decrement-btn">Decrement</button>
+  </div>
+  <script>    
+    function createCounter(initialValue) {
+      let counter = initialValue;      
+      return {
+        increment: function() {
+          counter++;  
+          updateUI(counter);  
+        },
+        decrement: function() {
+          counter--;  
+          updateUI(counter);  
+        },
+        getValue: function() {
+          return counter;  
+        }
+      };
+    }   
+    const myCounter = createCounter(0);
+    function updateUI(value) {      
+      document.getElementById('counter-value').innerText = value;
+    }    
+    document.getElementById('increment-btn').addEventListener('click', function() {
+      myCounter.increment();  
+    });
+    document.getElementById('decrement-btn').addEventListener('click', function() {
+      myCounter.decrement();  
+    });
+  </script>
+</body>
+</html>
